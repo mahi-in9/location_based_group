@@ -9,7 +9,7 @@ const createGroup = async (req, res) => {
   try {
     const { name, description, location, radius, isPrivate } = req.body;
 
-    if (!name) {
+    if (!name || !location) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -36,16 +36,32 @@ const createGroup = async (req, res) => {
  */
 const getNearbyGroups = async (req, res) => {
   try {
-    const { location } = req.query;
+    const { longitude, latitude, radius = 5000 } = req.query;
 
-    if (!location) {
+    if (!longitude || !latitude) {
       return res.status(400).json({ message: "Coordinates required" });
     }
 
-    const groups = await Group.find({ location }).populate(
-      "createdBy",
-      "name email",
-    );
+    const lng = parseFloat(longitude);
+    const lat = parseFloat(latitude);
+
+    if (isNaN(lng) || isNaN(lat)) {
+      return res.status(400).json({ message: "Invalid coordinates" });
+    }
+
+    const groups = await Group.find({
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [lng, lat],
+          },
+          $maxDistance: 5000, // 5km
+        },
+      },
+    })
+      .limit(20) // prevent heavy queries
+      .populate("createdBy", "name email");
 
     return res.status(200).json({
       message: "Nearby groups fetched",

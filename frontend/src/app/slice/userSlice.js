@@ -7,7 +7,7 @@ export const loginUser = createAsyncThunk(
   "user/login",
   async (credentials, thunkAPI) => {
     try {
-      const res = await API.post("/users/login", credentials);
+      const res = await API.post("/auth/login", credentials);
       return res.data; // { success, data, token }
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.message);
@@ -20,18 +20,20 @@ export const registerUser = createAsyncThunk(
   "user/register",
   async (data, thunkAPI) => {
     try {
-      const res = await API.post("/users", data);
-      return res.data;
+      const res = await API.post("/auth/register", data);
+      return res.data.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.message);
     }
   },
 );
 
+const storedUser = localStorage.getItem("user");
+
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    user: null,
+    user: storedUser ? JSON.parse(storedUser) : null,
     token: localStorage.getItem("token") || null,
     isAuthenticated: !!localStorage.getItem("token"),
     loading: false,
@@ -45,6 +47,10 @@ const userSlice = createSlice({
 
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+    },
+    loginSuccess: (state, action) => {
+      state.user = action.payload;
+      localStorage.setItem("user", JSON.stringify(action.payload));
     },
   },
   extraReducers: (builder) => {

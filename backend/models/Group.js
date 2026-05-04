@@ -17,7 +17,7 @@ const groupSchema = new mongoose.Schema(
         required: true,
       },
       coordinates: {
-        type: [Number], // [lng, lat]
+        type: [Number],
         required: true,
       },
     },
@@ -30,7 +30,7 @@ const groupSchema = new mongoose.Schema(
       type: Number,
       default: 5000, // meters (5km)
     },
-    
+
     isPrivate: {
       type: Boolean,
       default: false,
@@ -38,5 +38,7 @@ const groupSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+groupSchema.index({ location: "2dsphere" });
 
 module.exports = mongoose.model("Group", groupSchema);

@@ -1,6 +1,6 @@
 // src/components/Logout.jsx
 import { useDispatch } from "react-redux";
-import { logout } from "../redux/userSlice";
+import { logout } from "../app/slice/userSlice";
 import { useNavigate } from "react-router-dom";
 
 export default function Logout() {

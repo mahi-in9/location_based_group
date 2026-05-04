@@ -1,17 +1,15 @@
 import { Link } from "react-router-dom";
-import Navbar from "../components/Navbar";
 
 function Home() {
   return (
     <>
-      <Navbar />
-      <div className=" bg-linear-to-br from-[#5d5f5c] via-[#191414] to-[#0F0F0F]">
+      <div className="min-h-screen bg-linear-to-br from-[#5d5f5c] via-[#191414] to-[#0F0F0F]">
         <div className="flex flex-col items-center justify-center pt-20 h-[80vh]">
           <h1 className="text-4xl font-bold mb-4 text-[#ad0202]  text-shadow-emerald-200 ">
             Welcome to Nearby Chat
           </h1>
           <p className=" text-[#F5F5F5] text-sm opacity-65">
-            Join to chat with peoples around
+            Join to chat with peoples around YOU
           </p>
 
           <Link

@@ -1,6 +1,6 @@
 // src/redux/groupSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import API from "../api/api";
+import API from "../../api/api";
 
 // GET ALL GROUPS
 export const fetchGroups = createAsyncThunk(
@@ -33,9 +33,9 @@ export const fetchNearbyGroups = createAsyncThunk(
   "groups/nearby",
   async ({ latitude, longitude }, thunkAPI) => {
     try {
-      const res = await API.get(
-        `/groups/nearby?latitude=${latitude}&longitude=${longitude}`,
-      );
+      const res = await API.get("/groups/nearby", {
+        params: { latitude, longitude },
+      });
       return res.data.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.message);

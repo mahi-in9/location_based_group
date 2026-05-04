@@ -15,8 +15,8 @@ router.use(authMiddleware());
 
 router.post("/", createGroup);
 // router.get("/", getAllGroups);
+router.get("/nearby", getNearbyGroups);
 router.get("/:id", getGroupById);
-router.post("/nearby", getNearbyGroups);
 router.delete("/:id", deleteGroup);
 
 module.exports = router;
