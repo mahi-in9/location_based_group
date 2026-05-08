@@ -6,6 +6,9 @@ const cors = require("cors");
 
 const authRoutes = require("./routes/auth.routes");
 const groupRoutes = require("./routes/group.routes");
+const memberRoutes = require("./routes/member.routes");
+
+const errorHandler = require("./middlewares/error.middleware");
 
 const app = express();
 
@@ -16,6 +19,9 @@ connectDB();
 
 app.use("/api/auth", authRoutes);
 app.use("/api/groups", groupRoutes);
+app.use("/api/members", memberRoutes);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 

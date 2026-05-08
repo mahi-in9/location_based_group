@@ -35,6 +35,20 @@ const groupSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    category: {
+      type: String,
+      default: "",
+    },
+
+    image: {
+      type: String,
+      default: "",
+    },
+
+    locationName: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true },
 );

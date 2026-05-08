@@ -1,77 +1,188 @@
-// src/pages/Dashboard.jsx
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchNearbyGroups } from "../app/slice/groupSlice";
-import Logout from "../components/Logout";
+
+import { createGroup, fetchGroups } from "../app/slice/groupSlice";
+
+import {
+  joinGroup,
+  leaveGroup,
+  fetchUserGroups,
+} from "../app/slice/memberSlice";
 
 export default function Dashboard() {
   const dispatch = useDispatch();
 
-  const { user } = useSelector((state) => state.user);
-  const { nearbyGroups, loading, error } = useSelector((state) => state.group);
+  const { groups, loading } = useSelector((state) => state.group);
+
+  const { myGroups, loading: memberLoading } = useSelector(
+    (state) => state.member,
+  );
+
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    latitude: "",
+    longitude: "",
+  });
+
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
 
   useEffect(() => {
-    const coords = user?.location?.coordinates;
+    dispatch(fetchGroups());
+    dispatch(fetchUserGroups());
+  }, [dispatch]);
 
-    if (!coords || coords.length !== 2) return;
+  const membershipMap = useMemo(() => {
+    return new Set(myGroups.map((m) => m.groupId?._id || m.groupId));
+  }, [myGroups]);
 
-    const [longitude, latitude] = coords;
+  const isJoined = (groupId) => membershipMap.has(groupId);
 
-    dispatch(fetchNearbyGroups({ latitude, longitude }));
-  }, [dispatch, user]);
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    if (!form.name || !form.latitude || !form.longitude) return;
 
-  console.log(user);
+    await dispatch(createGroup(form));
+
+    setForm({
+      name: "",
+      description: "",
+      latitude: "",
+      longitude: "",
+    });
+  };
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) return;
+
+    setGeoLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((prev) => ({
+          ...prev,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        }));
+        setGeoLoading(false);
+      },
+      () => setGeoLoading(false),
+    );
+  };
+
+  const handleNearby = () => {
+    if (!form.latitude || !form.longitude) return;
+
+    dispatch(
+      fetchGroups({
+        latitude: form.latitude,
+        longitude: form.longitude,
+      }),
+    );
+  };
+
+  const handleJoin = async (groupId) => {
+    setActionLoadingId(groupId);
+    await dispatch(joinGroup(groupId));
+    setActionLoadingId(null);
+  };
+
+  const handleLeave = async (groupId) => {
+    setActionLoadingId(groupId);
+    await dispatch(leaveGroup(groupId));
+    setActionLoadingId(null);
+  };
+  console.log(groups);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Dashboard</h2>
-        <Logout />
-      </div>
+    <div className="max-w-4xl mx-auto p-6 space-y-8">
+      <h2 className="text-2xl font-bold">Groups</h2>
 
-      {/* Content */}
-      <section>
-        <h3 className="text-lg font-medium mb-4">Nearby Groups</h3>
+      {/* CREATE GROUP */}
 
-        {/* Loading */}
-        {loading && (
-          <div className="space-y-2">
-            <div className="h-4 bg-gray-800 rounded w-1/3 animate-pulse"></div>
-            <div className="h-4 bg-gray-800 rounded w-1/2 animate-pulse"></div>
-            <div className="h-4 bg-gray-800 rounded w-1/4 animate-pulse"></div>
-          </div>
-        )}
+      {/* NEARBY */}
+      <section className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Nearby Groups</h3>
 
-        {/* Error */}
-        {error && (
-          <div className="text-red-500 bg-red-100 p-3 rounded">{error}</div>
-        )}
+          <button
+            onClick={handleNearby}
+            className="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700"
+          >
+            Find Within 5km
+          </button>
+        </div>
 
-        {/* Empty State */}
-        {!loading && !error && nearbyGroups.length === 0 && (
-          <div className="text-gray-500">
-            No nearby groups found. Try creating one.
-          </div>
-        )}
-
-        {/* Data */}
-        {!loading && !error && nearbyGroups.length > 0 && (
-          <ul className="space-y-3">
-            {nearbyGroups.map((group) => (
-              <li
-                key={group._id}
-                className="p-4 bg-gray-900 shadow rounded border hover:shadow-md transition"
-              >
-                <h4 className="font-semibold">{group.name}</h4>
-                {group.description && (
-                  <p className="text-sm text-gray-600">{group.description}</p>
-                )}
-              </li>
-            ))}
-          </ul>
+        {groups.length <= 0 ? (
+          <p className="text-gray-500">No nearby groups</p>
+        ) : (
+          groups.map((g) => (
+            <GroupCard
+              key={g._id}
+              group={g}
+              isJoined={isJoined(g._id)}
+              loading={actionLoadingId === g._id}
+              onJoin={handleJoin}
+              onLeave={handleLeave}
+            />
+          ))
         )}
       </section>
+
+      {/* ALL GROUPS */}
+      <section className="space-y-3">
+        <h3 className="text-lg font-semibold">All Groups</h3>
+
+        {(loading || memberLoading) && (
+          <p className="text-gray-500">Loading...</p>
+        )}
+
+        {groups.length <= 0 ? (
+          <p className="text-gray-500">No groups available</p>
+        ) : (
+          groups.map((g) => (
+            <GroupCard
+              key={g._id}
+              group={g}
+              isJoined={isJoined(g._id)}
+              loading={actionLoadingId === g._id}
+              onJoin={handleJoin}
+              onLeave={handleLeave}
+            />
+          ))
+        )}
+      </section>
+    </div>
+  );
+}
+
+// ================= CARD =================
+function GroupCard({ group, isJoined, loading, onJoin, onLeave }) {
+  return (
+    <div className="border rounded-lg p-4 flex justify-between items-center shadow-sm">
+      <div>
+        <p className="font-semibold">{group.name}</p>
+        <p className="text-sm text-gray-500">{group.description}</p>
+      </div>
+
+      {isJoined ? (
+        <button
+          onClick={() => onLeave(group._id)}
+          disabled={loading}
+          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 disabled:opacity-50"
+        >
+          {loading ? "Leaving..." : "Leave"}
+        </button>
+      ) : (
+        <button
+          onClick={() => onJoin(group._id)}
+          disabled={loading}
+          className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 disabled:opacity-50"
+        >
+          {loading ? "Joining..." : "Join"}
+        </button>
+      )}
     </div>
   );
 }

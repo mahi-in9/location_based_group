@@ -1,6 +1,6 @@
 // src/redux/memberSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import API from "../api/api";
+import API from "../../api/api";
 
 // JOIN GROUP
 export const joinGroup = createAsyncThunk(
@@ -12,7 +12,7 @@ export const joinGroup = createAsyncThunk(
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.message);
     }
-  }
+  },
 );
 
 // LEAVE GROUP
@@ -25,7 +25,7 @@ export const leaveGroup = createAsyncThunk(
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.message);
     }
-  }
+  },
 );
 
 // GET USER GROUPS
@@ -38,7 +38,7 @@ export const fetchUserGroups = createAsyncThunk(
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.message);
     }
-  }
+  },
 );
 
 const memberSlice = createSlice({
@@ -72,7 +72,7 @@ const memberSlice = createSlice({
       // LEAVE
       .addCase(leaveGroup.fulfilled, (state, action) => {
         state.myGroups = state.myGroups.filter(
-          (g) => g.groupId._id !== action.payload
+          (g) => g.groupId._id !== action.payload,
         );
       });
   },

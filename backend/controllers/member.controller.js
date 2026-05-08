@@ -1,5 +1,5 @@
-const Member = require("../models/member.model");
-const Group = require("../models/group.model");
+const Member = require("../models/Membership");
+const Group = require("../models/Group");
 
 // JOIN GROUP
 const joinGroup = async (req, res) => {
