@@ -50,6 +50,7 @@ const userSlice = createSlice({
     },
     loginSuccess: (state, action) => {
       state.user = action.payload;
+      localStorage.setItem("token", JSON.stringify(action.payload));
       localStorage.setItem("user", JSON.stringify(action.payload));
     },
   },

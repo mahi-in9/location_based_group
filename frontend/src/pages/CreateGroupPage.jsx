@@ -1,19 +1,19 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import GroupForm from "./GroupForm"
+import GroupForm from "./GroupForm";
 import { createGroup } from "../app/slice/groupSlice";
-
 
 const CreateGroupPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading } = useSelector((state) => state.groups);
+  const { loading, error } = useSelector((state) => state.groups);
   const handleCreateGroup = async (data) => {
     const result = await dispatch(createGroup(data));
     if (result.meta.requestStatus === "fulfilled") {
       navigate("/groups");
     }
   };
+  console.log(error);
   return (
     <div className="min-h-screen bg-black text-white px-6 py-10">
       <div className="max-w-3xl mx-auto space-y-8">

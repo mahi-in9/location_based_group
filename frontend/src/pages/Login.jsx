@@ -25,6 +25,8 @@ export default function Login() {
     }
   };
 
+  console.log(error);
+
   return (
     <div>
       <h2>Login</h2>

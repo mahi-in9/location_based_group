@@ -8,6 +8,7 @@ const Member = require("../models/Membership");
 const createGroup = async (req, res) => {
   try {
     const { name, description, location, radius, isPrivate } = req.body;
+    const userId = req.user.id;
 
     if (!name || !location) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -20,6 +21,12 @@ const createGroup = async (req, res) => {
       createdBy: req.user.id,
       radius: radius || 5000,
       isPrivate: isPrivate || false,
+    });
+
+    const member = await Member.create({
+      userId,
+      groupId: group._id,
+      role: "owner",
     });
 
     return res.status(201).json({

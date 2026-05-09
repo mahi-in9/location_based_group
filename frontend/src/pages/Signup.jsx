@@ -1,7 +1,7 @@
 // src/pages/Signup.jsx
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { registerUser } from "../redux/userSlice";
+import { registerUser } from "../app/slice/userSlice";
 import { useNavigate } from "react-router-dom";
 
 export default function Signup() {
